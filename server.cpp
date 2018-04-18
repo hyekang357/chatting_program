@@ -11,14 +11,17 @@
 #include <ctype.h>
 #include <time.h>
 #include <pthread.h>
+#include <iostream>
+#include <fstream>
 
 #define MAXBUF 1024
+
+using namespace std;
 
 int nClient;
 int nFDList [1000];
 
-
-
+ofstream CONFIGFILE;
 
 /*
 Main functions of the server:
@@ -61,6 +64,7 @@ void *client_handler ( void *ptr ) {
           }
 				}
 
+				// token is the CLIENT_CLIENT_PORT
         token = strtok (NULL, "-");
         // broadcast out only the client-port
 				for (int k = 0; k < nClient; k++) {
@@ -70,6 +74,13 @@ void *client_handler ( void *ptr ) {
 						usleep(3000000);
 					}
 				}
+
+				// token is the CLIENT_SERVER_PORT
+				token = strtok (NULL, "-");
+				// client-server-port is saved in the config file
+				// write to config file
+        CONFIGFILE << token << "\n";
+
 				first = false;
 			}
 		  else {
@@ -97,6 +108,7 @@ void *server_handler ( void *ptr ) {
       for (int i = 0; i < nClient; i++) {
         write (nFDList [i], exitMessage, strlen (exitMessage) +  1);
       }
+			CONFIGFILE.close();
       exit(1);
     } else {
       // broadcast the typed message to all clients
@@ -116,6 +128,9 @@ int main (int argc, char* argv [])
 	struct sockaddr_in name;
 	int nPortNumber = 5002;
 	int nClientFileDescriptor = -1;
+
+	CONFIGFILE.open ("config.config", ios::app);
+
 
   // create a new socket object
 	// AF_INET: create IP based socket
