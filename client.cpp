@@ -51,12 +51,16 @@ void *client_write_handler ( void *ptr ) {
 
 	while (1) {
 		scanf("%s", readInBuffer);
+    char message [MAXBUF] = "Client ";
+    strcat(message, CLIENT_ID);
+    strcat(message, ": ");
+    strcat(message, readInBuffer);
 
     // broadcast the typed message to all clients
 		for (int i = 0; i < nClient; i++) {
-			write (nFDList [i], readInBuffer, strlen (readInBuffer) +  1);
+			write (nFDList [i], message, strlen (message) +  1);
 		}
-    write (serverFD, readInBuffer, strlen (readInBuffer) +  1);
+    write (serverFD, message, strlen (message) +  1);
 	}
 }
 
@@ -94,18 +98,15 @@ void *server_listen_handler ( void *ptr ) {
 
 				int newClientPort = atoi(buf);
 				// printf ("Connecting to new Client at port: %d\n", newClientPort);
-        // printf ("in 5\n");
-        // printf ("in 4\n");
-        // printf ("in 3\n");
-        // printf ("in 2\n");
-        // printf ("in 1\n");
 
         // connect to the new client through client port
 				int fd; // &&&
-				if (!(fd = conn((char*) host, newClientPort, ++CLIENT_CLIENT_PORT_INT)))    /* connect */
+        CLIENT_CLIENT_PORT_INT += 1;
+				if (!(fd = conn((char*) host, newClientPort, CLIENT_CLIENT_PORT_INT)))    /* connect */
 					exit(1);   /* something went wrong */
         // add to list of clients connected
         nFDList [nClient++] = fd;
+        // printf("Connecting to port %d at fd: %d\n", newClientPort, fd);
 
 				pthread_t client_listen_thread;
         // create a thread that listen to client, read message, and print out
@@ -134,7 +135,7 @@ int main(int argc, char **argv) {
 	CLIENT_CLIENT_PORT_INT = atoi(argv[3]);
 
 	// printf("arguments: %s, %d, %s\n", CLIENT_ID, CLIENT_SERVER_PORT, CLIENT_CLIENT_PORT);
-	printf("connecting to server at %s, port %d\n", host, port);
+	// printf("connecting to server at %s, port %d\n", host, port);
 
   // client connects to the server
   // connecting to host at port from client_server_port
@@ -209,6 +210,7 @@ int main(int argc, char **argv) {
     // add client to the list
     nFDList [nClient++] = nClientFileDescriptor;
 
+    // printf("Creating new thread for fd: %d", nClientFileDescriptor);
     // create a thread that listens to the client, reads message, and prints out
     pthread_t thread;
 		pthread_create(&thread, NULL, client_listen_handler, (void*) &nClientFileDescriptor);

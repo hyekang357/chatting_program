@@ -18,6 +18,8 @@ int nClient;
 int nFDList [1000];
 
 
+
+
 /*
 Main functions of the server:
   1. Listen for connection request from clients
@@ -50,18 +52,23 @@ void *client_handler ( void *ptr ) {
         strcat(clientIDMessage, token);
         strcat(clientIDMessage, ": initiated.");
 
-        // broadcast out the new client ID joined
-				for (int k = 0; k < nClient; k++) {
-					if (nDesc != nFDList [k])
-					write (nFDList [k], clientIDMessage, strlen(clientIDMessage) +  1);
-				}
         printf("%s\n", clientIDMessage);
 
-        token = strtok (NULL, " ,.-");
+        // broadcast out the message "CLIENT $ID: initiated." to every other clients
+				for (int k = 0; k < nClient; k++) {
+					if (nDesc != nFDList [k]) {
+            write (nFDList [k], clientIDMessage, strlen(clientIDMessage) +  1);
+          }
+				}
+
+        token = strtok (NULL, "-");
         // broadcast out only the client-port
 				for (int k = 0; k < nClient; k++) {
-					if (nDesc != nFDList [k])
-					write (nFDList [k], token, strlen(token) +  1);
+					if (nDesc != nFDList [k]) {
+						usleep(3000000);
+						write (nFDList [k], token, strlen(token) +  1);
+						usleep(3000000);
+					}
 				}
 				first = false;
 			}
@@ -80,6 +87,9 @@ void *server_handler ( void *ptr ) {
 	while (1) {
 		scanf("%s", readInBuffer);
 
+    char message [MAXBUF] = "Server :";
+    strcat(message, readInBuffer);
+
     // if server reads in exit then send last message to clients and terminate
     if (strcmp("Exit", readInBuffer) == 0 || strcmp("exit", readInBuffer) == 0) {
       char exitMessage[] = "Server:terminated.";
@@ -91,7 +101,7 @@ void *server_handler ( void *ptr ) {
     } else {
       // broadcast the typed message to all clients
       for (int i = 0; i < nClient; i++) {
-        write (nFDList [i], readInBuffer, strlen (readInBuffer) +  1);
+        write (nFDList [i], message, strlen (message) +  1);
       }
     }
 	}
@@ -143,6 +153,8 @@ int main (int argc, char* argv [])
 			perror ("listen");
 			exit (1);
 		}
+
+
 
 		// accept the connection
 		if ((nClientFileDescriptor = accept (s, (struct sockaddr *) &name, (socklen_t*) &len)) < 0) {
