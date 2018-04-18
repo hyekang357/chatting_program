@@ -54,7 +54,7 @@ void *client_handler ( void *ptr ) {
 
         printf("%s\n", clientIDMessage);
 
-        // broadcast out the new client ID joined
+        // broadcast out the message "CLIENT $ID: initiated." to every other clients
 				for (int k = 0; k < nClient; k++) {
 					if (nDesc != nFDList [k]) {
             write (nFDList [k], clientIDMessage, strlen(clientIDMessage) +  1);
@@ -64,10 +64,11 @@ void *client_handler ( void *ptr ) {
         token = strtok (NULL, "-");
         // broadcast out only the client-port
 				for (int k = 0; k < nClient; k++) {
-					if (nDesc != nFDList [k])
-          usleep(3000000);
-					write (nFDList [k], token, strlen(token) +  1);
-          usleep(3000000);
+					if (nDesc != nFDList [k]) {
+						usleep(3000000);
+						write (nFDList [k], token, strlen(token) +  1);
+						usleep(3000000);
+					}
 				}
 				first = false;
 			}
