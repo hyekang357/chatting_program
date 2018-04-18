@@ -23,7 +23,6 @@
 
 char* CLIENT_ID = NULL;
 int CLIENT_SERVER_PORT = 0;
-char* CLIENT_SERVER_PORT_CHAR = NULL;
 int CLIENT_CLIENT_PORT_INT = 0;
 char* CLIENT_CLIENT_PORT = NULL;
 
@@ -131,7 +130,6 @@ int main(int argc, char **argv) {
 
   nClient = 0;
   CLIENT_ID = argv[1];
-  CLIENT_SERVER_PORT_CHAR = argv[2];
 	CLIENT_SERVER_PORT = atoi(argv[2]);
 	CLIENT_CLIENT_PORT = argv[3];
 	CLIENT_CLIENT_PORT_INT = atoi(argv[3]);
@@ -148,14 +146,11 @@ int main(int argc, char **argv) {
   pthread_t server_listen_thread;
 	pthread_create(&server_listen_thread, NULL, server_listen_handler, (void*) &serverFD);
 
-  // write to server the client-client port (and clientid and client-server-port)
-  // so that server can broadcast to connect to other clients
+  // write to server the client-client port (and client ID) so that server can broadcast to connect to other clients
   // format of the message
-    // "CLIENTID-CLIENTSERVERPORT-CLIENTCLIENTPORT"
+    // "CLIENTID-CLIENTCLIENTPORT"
   char clientInfo[MAXBUF];
   strcpy(clientInfo, CLIENT_ID);
-  strcat(clientInfo, "-");
-  strcat(clientInfo, CLIENT_SERVER_PORT_CHAR);
   strcat(clientInfo, "-");
   strcat(clientInfo, CLIENT_CLIENT_PORT);
 

@@ -12,15 +12,13 @@
 #include <time.h>
 #include <pthread.h>
 
-#include <iostream>
-#include <fstream>
-
 #define MAXBUF 1024
-
-using namespace std;
 
 int nClient;
 int nFDList [1000];
+
+
+
 
 /*
 Main functions of the server:
@@ -50,41 +48,27 @@ void *client_handler ( void *ptr ) {
         char * token;
         // perform string manipulation to concatenate ID and CLIENT-PORT
         token = strtok(buf, "-");
-        printf("buf: %s\n", buf);
-
-        printf("first token: %s\n", token);
         char clientIDMessage[MAXBUF] = "Client ";
         strcat(clientIDMessage, token);
         strcat(clientIDMessage, ": initiated.");
 
         printf("%s\n", clientIDMessage);
 
-        // broadcast out the new client ID joined
+        // broadcast out the message "CLIENT $ID: initiated." to every other clients
 				for (int k = 0; k < nClient; k++) {
 					if (nDesc != nFDList [k]) {
             write (nFDList [k], clientIDMessage, strlen(clientIDMessage) +  1);
           }
 				}
 
-        // client-server-port is saved in the config file
-
         token = strtok (NULL, "-");
-        printf("second token: %s\n", token);
-
-        // ofstream configFile;
-        // configFile.open ("config", ios::app);
-        // configFile << token;
-        // configFile.close();
-
-        token = strtok (NULL, "-");
-        printf("third token: %s\n", token);
-
         // broadcast out only the client-port
 				for (int k = 0; k < nClient; k++) {
-					if (nDesc != nFDList [k])
-          usleep(3000000);
-					write (nFDList [k], token, strlen(token) +  1);
-          usleep(3000000);
+					if (nDesc != nFDList [k]) {
+						usleep(3000000);
+						write (nFDList [k], token, strlen(token) +  1);
+						usleep(3000000);
+					}
 				}
 				first = false;
 			}
